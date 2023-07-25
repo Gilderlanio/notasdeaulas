@@ -1,2 +1,1 @@
-# notasdeaulas
-Notas de aula - Bioinformática
+# Notas de aula - Bioinformática
