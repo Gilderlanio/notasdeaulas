@@ -1,0 +1,69 @@
+---
+title: "ALL Analysis"
+output: html_document
+date: "2024-04-25"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+#install.packages("nnet")
+#install.packages("caret")
+
+library("nnet")
+library("caret")
+library("dplyr")
+
+```
+
+```{r}
+# Carregando os dados
+expression <- read.table("ALL.txt", header = T, sep = "\t")
+
+# Remover os missing data
+expression <- na.omit(expression)
+
+# Dimensão dos dados
+dim(expression)
+
+# Vetor do diagnóstico de leucemia
+expression$class
+
+# Verificar quantas amostras positivas tenho e quantas negativa?
+table(expression$class)
+
+expression[expression$class == "POS",]$class <- 1
+expression[expression$class == "NEG",]$class <- 0
+
+```
+
+```{r}
+
+# TODO: Shuflle
+
+index_treinamento = createDataPartition(expression$class, p = 0.7, list = FALSE)
+exp_treinamento <- expression[index_treinamento, ]
+exp_teste <- expression[-index_treinamento, ]
+
+class_treinamento <- exp_treinamento$class
+class_teste <- exp_teste$class
+
+exp_treinamento$class <- NULL
+exp_teste$class <- NULL
+
+model_nn <- nnet(x = exp_treinamento[, 1:20], y = as.numeric(class_treinamento) , size = 10)
+model_nn
+predicoes <- predict(model_nn, exp_teste)
+
+# TODO: Executrar a construção do modelo e verificar se as predições mudam. 
+
+
+```
+
+
+
+
+
