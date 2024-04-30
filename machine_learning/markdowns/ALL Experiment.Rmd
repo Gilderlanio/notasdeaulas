@@ -9,7 +9,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 
-```{r}
+```{r echo=FALSE, warning=FALSE, message=FALSE}
 #install.packages("nnet")
 #install.packages("caret")
 
@@ -42,24 +42,43 @@ expression[expression$class == "NEG",]$class <- 0
 
 ```{r}
 
-# TODO: Shuflle
+#TODO - Randomize o dataset.
 
 index_treinamento = createDataPartition(expression$class, p = 0.7, list = FALSE)
 exp_treinamento <- expression[index_treinamento, ]
 exp_teste <- expression[-index_treinamento, ]
 
 class_treinamento <- exp_treinamento$class
-class_teste <- exp_teste$class
+class_teste <- as.factor(exp_teste$class)
 
 exp_treinamento$class <- NULL
 exp_teste$class <- NULL
+data <- expression
 
-model_nn <- nnet(x = exp_treinamento[, 1:20], y = as.numeric(class_treinamento) , size = 10)
-model_nn
+# Função para selecionar genes com diferença entre as médias de expressão entre dois grupos
+select_significant_genes <- function(data, class_column, threshold = 0.05) {
+# TODO: Implemente sua função de seleção de características 
+}
+
+sel_genes <- select_significant_genes(expression, "class", threshold = 1e-8)
+
+
+model_nn <- nnet(x = exp_treinamento[, sel_genes], y = as.numeric(class_treinamento) , size = 10)
+
 predicoes <- predict(model_nn, exp_teste)
+predicoes <- as.factor(ifelse(predicoes >= 0.5, "1", "0"))
 
-# TODO: Executrar a construção do modelo e verificar se as predições mudam. 
+# Métricas de validação
 
+precision(class_teste, predicoes)
+recall(class_teste, predicoes)
+sensitivity(class_teste, predicoes)
+specificity(class_teste, predicoes)
+
+# Recuperar a acurácia
+cm <- confusionMatrix(class_teste, predicoes)
+cm_overall <- cm$overall
+cm_overall[1]
 
 ```
 
