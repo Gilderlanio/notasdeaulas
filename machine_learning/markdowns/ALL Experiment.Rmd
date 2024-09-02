@@ -1,0 +1,88 @@
+---
+title: "ALL Analysis"
+output: html_document
+date: "2024-04-25"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r echo=FALSE, warning=FALSE, message=FALSE}
+#install.packages("nnet")
+#install.packages("caret")
+
+library("nnet")
+library("caret")
+library("dplyr")
+
+```
+
+```{r}
+# Carregando os dados
+expression <- read.table("ALL.txt", header = T, sep = "\t")
+
+# Remover os missing data
+expression <- na.omit(expression)
+
+# Dimensão dos dados
+dim(expression)
+
+# Vetor do diagnóstico de leucemia
+expression$class
+
+# Verificar quantas amostras positivas tenho e quantas negativa?
+table(expression$class)
+
+expression[expression$class == "POS",]$class <- 1
+expression[expression$class == "NEG",]$class <- 0
+
+```
+
+```{r}
+
+#TODO - Randomize o dataset.
+
+index_treinamento = createDataPartition(expression$class, p = 0.7, list = FALSE)
+exp_treinamento <- expression[index_treinamento, ]
+exp_teste <- expression[-index_treinamento, ]
+
+class_treinamento <- exp_treinamento$class
+class_teste <- as.factor(exp_teste$class)
+
+exp_treinamento$class <- NULL
+exp_teste$class <- NULL
+data <- expression
+
+# Função para selecionar genes com diferença entre as médias de expressão entre dois grupos
+select_significant_genes <- function(data, class_column, threshold = 0.05) {
+# TODO: Implemente sua função de seleção de características 
+}
+
+sel_genes <- select_significant_genes(expression, "class", threshold = 1e-8)
+
+
+model_nn <- nnet(x = exp_treinamento[, sel_genes], y = as.numeric(class_treinamento) , size = 10)
+
+predicoes <- predict(model_nn, exp_teste)
+predicoes <- as.factor(ifelse(predicoes >= 0.5, "1", "0"))
+
+# Métricas de validação
+
+precision(class_teste, predicoes)
+recall(class_teste, predicoes)
+sensitivity(class_teste, predicoes)
+specificity(class_teste, predicoes)
+
+# Recuperar a acurácia
+cm <- confusionMatrix(class_teste, predicoes)
+cm_overall <- cm$overall
+cm_overall[1]
+
+```
+
+
+
+
+
